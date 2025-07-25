@@ -1,23 +1,25 @@
 import { useEffect, useState, useCallback } from 'react';
-import { Header } from '../components/layout/Header';
+import { Header } from '@/components/layout/Header';
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '../components/ui/card';
-import { Button } from '../components/ui/button';
-import { Input } from '../components/ui/input';
-import { Badge } from '../components/ui/badge';
+} from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Label } from '../components/ui/label';
+import { Label } from '@/components/ui/label';
 import { motion } from 'framer-motion';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogFooter,
+  DialogDescription, // Ensure DialogDescription is imported
 } from '@/components/ui/dialog';
 import {
   Select,
@@ -26,19 +28,21 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Edit, Printer, FileText } from 'lucide-react'; // Added Printer and FileText icons
+import { Edit, Printer, FileText } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast'; // Ensure this path is correct
 
 // Define an interface for your transaction data
 interface Transaction {
   id: string;
-  type: string;
-  amount: number | string; // Allow string as it comes from DB, then convert for display
+  type: 'income' | 'expense' | 'debt'; // Made type more specific
+  amount: number; // Changed to number as it should be parsed
   description: string;
   date: string; // Stored as YYYY-MM-DD
   category: string | null;
   account_id: string | null;
   account_name: string | null; // Added for display from backend join
   created_at: string;
+  updated_at?: string; // Added updated_at as it's in backend
 }
 
 // Interface for Account (needed for the dropdown in the edit modal)
@@ -47,6 +51,17 @@ interface Account {
   code: string;
   name: string;
   type: string;
+}
+
+// Interface for the form data in the edit modal
+interface EditTransactionFormData {
+  id: string;
+  type: 'income' | 'expense' | 'debt'; // Made type more specific
+  amount: number; // Changed to number
+  description: string | null;
+  date: string;
+  category: string | null;
+  account_id: string | null;
 }
 
 const Transactions = () => {
@@ -60,7 +75,11 @@ const Transactions = () => {
 
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
-  const [editFormData, setEditFormData] = useState<any>({});
+  const [editFormData, setEditFormData] = useState<EditTransactionFormData>({
+    id: '', type: 'expense', amount: 0, description: null, date: '', category: null, account_id: null
+  });
+
+  const { toast } = useToast();
 
   const filters = [
     { id: 'all', label: 'All Transactions', color: 'bg-indigo-500' },
@@ -92,31 +111,36 @@ const Transactions = () => {
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-      const data = await response.json();
+      const data: Transaction[] = await response.json(); // Explicitly type data
       setTransactions(data);
     } catch (error) {
       console.error('Error fetching transactions:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to load transactions. Please try again.',
+        variant: 'destructive',
+      });
     } finally {
       setLoading(false);
     }
-  }, [selectedFilter, searchTerm, fromDate, toDate]);
+  }, [selectedFilter, searchTerm, fromDate, toDate, toast]);
 
   useEffect(() => {
     fetchTransactions();
     fetch('http://localhost:3000/accounts')
       .then(res => res.json())
       .then(data => setAccounts(data))
-      .catch(console.error);
+      .catch(error => console.error('Error fetching accounts:', error));
   }, [fetchTransactions]);
 
   const handleEditClick = (transaction: Transaction) => {
     setEditingTransaction(transaction);
     setEditFormData({
       id: transaction.id,
-      type: transaction.type,
-      amount: transaction.amount,
-      description: transaction.description || '',
-      date: transaction.date,
+      type: transaction.type as 'income' | 'expense' | 'debt', // Cast to specific type
+      amount: typeof transaction.amount === 'string' ? parseFloat(transaction.amount) : transaction.amount,
+      description: transaction.description || null,
+      date: transaction.date.split('T')[0], // Ensure YYYY-MM-DD
       category: transaction.category,
       account_id: transaction.account_id,
     });
@@ -125,27 +149,33 @@ const Transactions = () => {
 
   const handleEditFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setEditFormData(prev => ({ ...prev, [name]: value }));
+    setEditFormData((prev: EditTransactionFormData) => ({
+      ...prev,
+      [name]: name === 'amount' ? parseFloat(value) || 0 : value, // Parse amount to number
+    }));
   };
 
-  const handleEditSelectChange = (name: string, value: string) => {
+  const handleEditSelectChange = (name: keyof EditTransactionFormData, value: string) => {
     const finalValue = value === "NULL_CATEGORY_PLACEHOLDER" || value === "NO_ACCOUNT_PLACEHOLDER" ? null : value;
-    setEditFormData(prev => ({ ...prev, [name]: finalValue }));
+    setEditFormData((prev: EditTransactionFormData) => ({ ...prev, [name]: finalValue }));
   };
-
 
   const handleUpdateSubmit = async () => {
     if (!editingTransaction) return;
 
-    const parsedAmount = parseFloat(editFormData.amount);
+    const parsedAmount = editFormData.amount; // Already parsed in handleEditFormChange
     if (isNaN(parsedAmount) || !editFormData.type || !editFormData.date) {
-      alert('Please fill in all required fields (Type, Amount, Date).');
+      toast({
+        title: 'Missing Information',
+        description: 'Please fill in all required fields (Type, Amount, Date).',
+        variant: 'destructive',
+      });
       return;
     }
 
     try {
       const response = await fetch(`http://localhost:3000/transactions/manual`, {
-        method: 'POST',
+        method: 'POST', // Assuming this endpoint handles updates by ID in the body
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           id: editingTransaction.id,
@@ -163,30 +193,32 @@ const Transactions = () => {
         throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
       }
 
-      const updatedTransaction = await response.json();
-
-      setTransactions(prev =>
-        prev.map(t => (t.id === updatedTransaction.id ? updatedTransaction : t))
-      );
       setIsEditModalOpen(false);
       setEditingTransaction(null);
-      setEditFormData({});
+      setEditFormData({ id: '', type: 'expense', amount: 0, description: null, date: '', category: null, account_id: null }); // Reset form
       fetchTransactions();
+      toast({ title: 'Transaction updated successfully!' });
 
     } catch (error) {
       console.error('Error updating transaction:', error);
-      alert(`Failed to update transaction: ${error instanceof Error ? error.message : String(error)}`);
+      toast({
+        title: 'Error',
+        description: `Failed to update transaction: ${error instanceof Error ? error.message : String(error)}`,
+        variant: 'destructive',
+      });
     }
   };
 
-  // --- NEW: Export to CSV Function ---
   const handleExportCsv = () => {
     if (transactions.length === 0) {
-      alert('No transactions to export.');
+      toast({
+        title: 'No Data',
+        description: 'No transactions to export.',
+        variant: 'default',
+      });
       return;
     }
 
-    // Define CSV headers
     const headers = [
       'ID',
       'Type',
@@ -198,44 +230,37 @@ const Transactions = () => {
       'Created At',
     ];
 
-    // Map transaction data to CSV rows
     const csvRows = transactions.map(t => [
-      `"${t.id}"`, // Enclose ID in quotes to ensure it's treated as text
+      `"${t.id}"`,
       `"${t.type}"`,
-      `${(+t.amount).toFixed(2)}`, // Ensure amount is number and formatted
-      `"${t.description ? t.description.replace(/"/g, '""') : ''}"`, // Handle quotes in description
+      `${t.amount.toFixed(2)}`, // Use t.amount directly as it's now number
+      `"${t.description ? t.description.replace(/"/g, '""') : ''}"`,
       `"${new Date(t.date).toLocaleDateString()}"`,
       `"${t.category || ''}"`,
       `"${t.account_name || ''}"`,
       `"${new Date(t.created_at).toLocaleString()}"`,
     ]);
 
-    // Combine headers and rows
     const csvContent = [
       headers.join(','),
       ...csvRows.map(row => row.join(',')),
     ].join('\n');
 
-    // Create a Blob and download it
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.setAttribute('href', url);
     link.setAttribute('download', 'transactions.csv');
-    document.body.appendChild(link); // Required for Firefox
+    document.body.appendChild(link);
     link.click();
-    document.body.removeChild(link); // Clean up
-    URL.revokeObjectURL(url); // Release the object URL
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    toast({ title: 'Transactions exported to CSV!' });
   };
 
-  // --- NEW: Print Function ---
   const handlePrint = () => {
-    // This will open the browser's print dialog, trying to print the whole page.
-    // For more advanced table-specific printing, you'd use a dedicated library
-    // or style the table for print media queries.
     window.print();
   };
-
 
   return (
     <div className='flex-1 space-y-4 p-4 md:p-6 lg:p-8'>
@@ -247,7 +272,6 @@ const Transactions = () => {
         transition={{ duration: 0.5 }}
         className='space-y-6'
       >
-        {/* Filter Section */}
         <Card>
           <CardHeader>
             <CardTitle>Transaction Filters</CardTitle>
@@ -256,7 +280,7 @@ const Transactions = () => {
           <CardContent>
             <RadioGroup
               value={selectedFilter}
-              onValueChange={setSelectedFilter}
+              onValueChange={(value: string) => setSelectedFilter(value)}
               className='grid grid-cols-2 md:grid-cols-5 gap-4'
             >
               {filters.map(filter => (
@@ -275,7 +299,6 @@ const Transactions = () => {
           </CardContent>
         </Card>
 
-        {/* Search and Actions */}
         <div className='flex flex-col md:flex-row gap-4 items-start md:items-center justify-between'>
           <div className='flex flex-col sm:flex-row gap-4 flex-1'>
             <Input
@@ -312,7 +335,6 @@ const Transactions = () => {
           </div>
         </div>
 
-        {/* Transactions Table */}
         <Card>
           <CardHeader>
             <CardTitle>Transaction History</CardTitle>
@@ -356,7 +378,7 @@ const Transactions = () => {
                         <td className='p-3'>{new Date(transaction.date).toLocaleDateString()}</td>
                         <td className='p-3'>{transaction.account_name || 'N/A'}</td>
                         <td className='p-3'>{transaction.category || '-'}</td>
-                        <td className='p-3'>R{(+transaction.amount).toFixed(2)}</td>
+                        <td className='p-3'>R{transaction.amount.toFixed(2)}</td>
                         <td className='p-3'>
                           <div className='flex gap-2'>
                             <Button
@@ -366,9 +388,6 @@ const Transactions = () => {
                             >
                               <Edit className='h-4 w-4' />
                             </Button>
-                            {/* <Button variant='ghost' size='sm'>
-                              <Trash2 className='h-4 w-4' />
-                            </Button> */}
                           </div>
                         </td>
                       </tr>
@@ -381,11 +400,11 @@ const Transactions = () => {
         </Card>
       </motion.div>
 
-      {/* Edit Transaction Modal */}
       <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Edit Transaction</DialogTitle>
+            <DialogDescription>Make changes to your transaction here.</DialogDescription>
           </DialogHeader>
           {editingTransaction && (
             <div className='space-y-4 py-4'>
@@ -393,7 +412,7 @@ const Transactions = () => {
               <Select
                 name='type'
                 value={editFormData.type || ''}
-                onValueChange={value => handleEditSelectChange('type', value)}
+                onValueChange={(value: string) => handleEditSelectChange('type', value)}
               >
                 <SelectTrigger id='edit-type'>
                   <SelectValue placeholder='Select type' />
@@ -408,6 +427,7 @@ const Transactions = () => {
               <Input
                 id='edit-amount'
                 type='number'
+                step='0.01'
                 name='amount'
                 value={editFormData.amount}
                 onChange={handleEditFormChange}
@@ -421,6 +441,7 @@ const Transactions = () => {
                 name='date'
                 value={editFormData.date}
                 onChange={handleEditFormChange}
+                placeholder='Date'
               />
 
               <Label htmlFor='edit-description'>Description</Label>
@@ -428,7 +449,7 @@ const Transactions = () => {
                 id='edit-description'
                 type='text'
                 name='description'
-                value={editFormData.description}
+                value={editFormData.description || ''}
                 onChange={handleEditFormChange}
                 placeholder='Description'
               />
@@ -437,7 +458,7 @@ const Transactions = () => {
               <Select
                 name='category'
                 value={editFormData.category || "NULL_CATEGORY_PLACEHOLDER"}
-                onValueChange={value => handleEditSelectChange('category', value)}
+                onValueChange={(value: string) => handleEditSelectChange('category', value)}
               >
                 <SelectTrigger id='edit-category'>
                   <SelectValue placeholder='Select category (Optional)' />
@@ -455,7 +476,7 @@ const Transactions = () => {
               <Select
                 name='account_id'
                 value={editFormData.account_id || "NO_ACCOUNT_PLACEHOLDER"}
-                onValueChange={value => handleEditSelectChange('account_id', value)}
+                onValueChange={(value: string) => handleEditSelectChange('account_id', value)}
               >
                 <SelectTrigger id='edit-account'>
                   <SelectValue placeholder='Select account' />
@@ -470,12 +491,12 @@ const Transactions = () => {
                 </SelectContent>
               </Select>
 
-              <div className='flex justify-end gap-2 mt-4'>
+              <DialogFooter>
                 <Button variant='outline' onClick={() => setIsEditModalOpen(false)}>
                   Cancel
                 </Button>
                 <Button onClick={handleUpdateSubmit}>Save Changes</Button>
-              </div>
+              </DialogFooter>
             </div>
           )}
         </DialogContent>
