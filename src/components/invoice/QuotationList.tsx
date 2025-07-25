@@ -486,7 +486,7 @@ export function QuotationList() {
                       </TableCell>
                       <TableCell>
                         R
-                        {(quotation.total_amount).toLocaleString('en-ZA', { // total_amount is now guaranteed number
+                        {(quotation.total_amount).toLocaleString('en-ZA', {
                           minimumFractionDigits: 2,
                         })}
                       </TableCell>
@@ -508,8 +508,8 @@ export function QuotationList() {
                               variant='ghost'
                               size='sm'
                               title='Convert to Invoice'
-                              onClick={() => handleConvertToInvoice(quotation)} // Call the new function
-                              disabled={isConverting} // Disable button during conversion
+                              onClick={() => handleConvertToInvoice(quotation)}
+                              disabled={isConverting}
                             >
                               {isConverting ? <Loader2 className='h-4 w-4 animate-spin' /> : <ArrowRight className='h-4 w-4' />}
                             </Button>
