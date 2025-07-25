@@ -1,15 +1,15 @@
-import { useState } from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
+import React, { useState } from 'react'; // Added React import
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue
-} from '@/components/ui/select'
+} from '@/components/ui/select';
 import {
   Table,
   TableBody,
@@ -17,39 +17,39 @@ import {
   TableHead,
   TableHeader,
   TableRow
-} from '@/components/ui/table'
-import { Edit } from 'lucide-react'
+} from '@/components/ui/table';
+// Removed unused 'Edit' import from lucide-react
 
 interface TransactionsListProps {
-  type: 'sales' | 'quotations' | 'purchases'
+  type: 'sales' | 'quotations' | 'purchases';
 }
 
 export function TransactionsList ({ type }: TransactionsListProps) {
-  const [startDate, setStartDate] = useState('')
-  const [endDate, setEndDate] = useState('')
-  const [selectedType, setSelectedType] = useState('')
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
+  const [selectedType, setSelectedType] = useState('');
 
   const getTitle = () => {
     switch (type) {
       case 'sales':
-        return 'Sales/Quotations Transactions'
+        return 'Sales/Quotations Transactions';
       case 'quotations':
-        return 'Quotations Transactions'
+        return 'Quotations Transactions';
       case 'purchases':
-        return 'Purchase Transactions'
+        return 'Purchase Transactions';
       default:
-        return 'Transactions'
+        return 'Transactions';
     }
-  }
+  };
 
   const getHeaderColumn = () => {
     switch (type) {
       case 'purchases':
-        return 'Supplier'
+        return 'Supplier';
       default:
-        return 'Customer'
+        return 'Customer';
     }
-  }
+  };
 
   return (
     <Card>
@@ -64,7 +64,7 @@ export function TransactionsList ({ type }: TransactionsListProps) {
               id='start-date'
               type='date'
               value={startDate}
-              onChange={e => setStartDate(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setStartDate(e.target.value)}
             />
           </div>
           <div>
@@ -73,7 +73,7 @@ export function TransactionsList ({ type }: TransactionsListProps) {
               id='end-date'
               type='date'
               value={endDate}
-              onChange={e => setEndDate(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEndDate(e.target.value)}
             />
           </div>
           <div>
@@ -121,5 +121,5 @@ export function TransactionsList ({ type }: TransactionsListProps) {
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }
