@@ -11,11 +11,9 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { Plus, XCircle, Loader2, ChevronLeft } from 'lucide-react'; // Added ChevronLeft
+import { Plus, XCircle, Loader2, ChevronLeft } from 'lucide-react';
 
 import { useToast } from '@/components/ui/use-toast';
-// Removed DialogDescription import as it's no longer used
-// import { DialogDescription } from '@/components/ui/dialog'; 
 
 // Define API Base URL
 const API_BASE_URL = 'http://localhost:3000';
@@ -489,15 +487,14 @@ export function QuotationForm({ quotation, onClose, onSubmitSuccess }: Quotation
 
   return (
     <form onSubmit={handleSubmit} className='space-y-6'>
-      {/* Removed DialogDescription as it's no longer within a Dialog */}
       <Card>
-        <CardHeader className="flex items-center justify-between"> {/* Added flex for alignment */}
+        <CardHeader className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Button
               type="button"
               variant="ghost"
               size="icon"
-              onClick={onClose} // Use onClose to go back
+              onClick={onClose}
               className="rounded-full"
             >
               <ChevronLeft className="h-6 w-6" />
@@ -598,7 +595,7 @@ export function QuotationForm({ quotation, onClose, onSubmitSuccess }: Quotation
                 type='date'
                 value={formData.expiry_date}
                 onChange={handleInputChange}
-                required // Made required as per validation logic
+                required
               />
             </div>
             <div>
@@ -676,7 +673,7 @@ export function QuotationForm({ quotation, onClose, onSubmitSuccess }: Quotation
                     <SelectItem value="custom-item">Custom Item</SelectItem>
                     {productsServices.map(ps => (
                       <SelectItem key={ps.id} value={ps.id}>
-                        {ps.name} ({formData.currency}{(ps.price ?? 0).toFixed(2)}) {/* Use ps.price */}
+                        {ps.name} ({formData.currency}{(ps.price ?? 0).toFixed(2)})
                       </SelectItem>
                     ))}
                   </SelectContent>
