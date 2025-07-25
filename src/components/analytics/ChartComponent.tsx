@@ -1,9 +1,10 @@
-import Highcharts from 'highcharts'
-import HighchartsReact from 'highcharts-react-official'
+import Highcharts from 'highcharts';
+import HighchartsReact from 'highcharts-react-official';
+import React from 'react'; // Added React import for JSX
 
 interface ChartComponentProps {
-  data: any[]
-  config: any
+  data: any[];
+  config: any; // Highcharts.Options; // Can be more specific if needed
 }
 
 export function ChartComponent ({ data, config }: ChartComponentProps) {
@@ -21,7 +22,7 @@ export function ChartComponent ({ data, config }: ChartComponentProps) {
         }
       ]
     }
-  }
+  };
 
-  return <HighchartsReact highcharts={Highcharts} options={options} />
+  return <HighchartsReact highcharts={Highcharts} options={options} />;
 }
