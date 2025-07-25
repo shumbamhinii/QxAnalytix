@@ -2,10 +2,10 @@
   "version": 2,
   "builds": [
     {
-      "src": "package.json",  // Tell Vercel this is a Node.js project by pointing to package.json
-      "use": "@vercel/node",  // Use the Node.js builder
+      "src": "package.json",  
+      "use": "@vercel/node",  
       "config": {
-        "outputDirectory": "dist" // Specify the directory where Vite outputs your build
+        "outputDirectory": "dist" 
       }
     }
   ],
@@ -15,5 +15,5 @@
       "dest": "/index.html"
     }
   ],
-  "buildCommand": "npm run build" // Explicitly tell Vercel to run this command
+  "buildCommand": "npm run build" 
 }
