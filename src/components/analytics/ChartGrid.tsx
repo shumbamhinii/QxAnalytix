@@ -1,36 +1,23 @@
-import { useState, useEffect, useCallback } from 'react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Button } from '@/components/ui/button'; // IMPORTANT: Changed to Shadcn UI Button
-import { Expand, Loader2 } from 'lucide-react';
-import { ChartComponent } from './ChartComponent';
+import React from 'react'; // Added React import for JSX
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'; // Removed CardDescription as it's not used here
+import { Button } from '@/components/ui/button';
+import { Expand } from 'lucide-react'; // Removed Loader2 as it's not used here
+import { ChartComponent } from './ChartComponent'; // Relative import
 import { motion } from 'framer-motion';
 
-// Define API Base URL (kept for context, but not used for layout-only fix)
-const API_BASE_URL = 'http://localhost:3000';
-
-// Define the ChartData interface (kept as is)
+// Define the ChartData interface
 interface ChartData {
   id: string;
   title: string;
   type: 'line' | 'pie' | 'column' | 'area' | 'bar';
   data: (string | number)[][]; // Data for Highcharts series
   config: Highcharts.Options; // Highcharts configuration
-  isLoading: boolean; // Kept for consistency, but will be false with hardcoded data
-  error: string | null; // Kept for consistency, but will be null with hardcoded data
+  isLoading: boolean;
+  error: string | null;
 }
 
 interface ChartGridProps {
   onExpandChart: (chart: ChartData) => void;
-}
-
-// Interface for the data fetched from stats API endpoints (kept for context)
-interface StatResponse {
-  count?: number;
-  value?: number;
-  previousCount?: number;
-  previousValue?: number;
-  changePercentage?: number;
-  changeType?: 'increase' | 'decrease' | 'neutral';
 }
 
 // Using the original hardcoded chartData for layout fix only
@@ -54,8 +41,8 @@ const chartData: ChartData[] = [
       yAxis: { title: { text: 'Revenue (R)' } },
       series: [{ name: 'Revenue', data: [65000, 75000, 85000, 95000, 105000, 115000], type: 'line', color: '#2563eb' }]
     },
-    isLoading: false, // Set to false for hardcoded data
-    error: null // Set to null for hardcoded data
+    isLoading: false,
+    error: null
   },
   {
     id: 'sales-by-category',
@@ -70,7 +57,7 @@ const chartData: ChartData[] = [
     config: {
       chart: { type: 'pie' },
       title: { text: 'Sales Distribution by Category' },
-      series: [{ name: 'Sales', data: [{name: 'Electronics', y: 45}, {name: 'Clothing', y: 30}, {name: 'Books', y: 15}, {name: 'Sports', y: 10}], type: 'pie', colorByPoint: true }]
+      series: [{ name: 'Sales', data: [{name: 'Electronics', y: 45}, {name: 'Clothing', y: 30}, {name: 'Books', y: 15}, {name: 'Sports', y: 10}], type: 'pie' }] // Removed colorByPoint from series directly
     },
     isLoading: false,
     error: null
@@ -163,9 +150,6 @@ const chartData: ChartData[] = [
 ];
 
 export function ChartGrid ({ onExpandChart }: ChartGridProps) {
-  // Using hardcoded chartData for layout fix, so no useState/useEffect for fetching needed here.
-  // The 'isLoading' and 'error' properties are part of the ChartData interface for future dynamic use.
-
   return (
     <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
       {chartData.map((chart, index) => (
@@ -175,33 +159,40 @@ export function ChartGrid ({ onExpandChart }: ChartGridProps) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: index * 0.1 }}
         >
-          <Card className='relative group h-full flex flex-col'> {/* Added h-full and flex-col */}
+          <Card className='relative group h-full flex flex-col'>
             <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
               <CardTitle className='text-sm font-medium'>
                 {chart.title}
               </CardTitle>
-              {/* Replaced Ant Design Button with Shadcn UI Button */}
               <Button
-                variant='ghost' // Use ghost variant for a subtle button
-                size='icon' // Make it a small icon button
+                variant='ghost'
+                size='icon'
                 onClick={() => onExpandChart(chart)}
-                // Position absolutely within the card, visible on hover
                 className='opacity-0 group-hover:opacity-100 transition-opacity absolute top-2 right-2 z-10'
               >
                 <Expand className='h-4 w-4' />
               </Button>
             </CardHeader>
-            <CardContent className='flex-1 flex items-center justify-center p-4'> {/* Added flex-1 and p-4 */}
-              <div className='w-full h-full'> {/* Ensure Highcharts takes full available space */}
-                {/* With hardcoded data, isLoading is false and error is null */}
+            <CardContent className='flex-1 flex items-center justify-center p-4'>
+              <div className='w-full h-full'>
                 <ChartComponent
                   data={chart.data}
                   config={{
                     ...chart.config,
                     // Ensure series data is correctly passed from the hardcoded 'data'
                     series: Array.isArray(chart.config.series)
-                      ? chart.config.series.map((s: any) => ({ ...s, data: s.type === 'pie' ? chart.data.map(item => ({ name: item[0], y: item[1] })) : chart.data }))
-                      : [{ ...chart.config.series, data: chart.config.series?.type === 'pie' ? chart.data.map(item => ({ name: item[0], y: item[1] })) : chart.data }]
+                      ? chart.config.series.map((s: any) => ({
+                          ...s,
+                          data: s.type === 'pie'
+                            ? chart.data.map(item => ({ name: item[0], y: item[1] as number })) // Explicitly cast y to number
+                            : chart.data
+                        }))
+                      : [{
+                          ...chart.config.series,
+                          data: chart.config.series?.type === 'pie'
+                            ? chart.data.map(item => ({ name: item[0], y: item[1] as number })) // Explicitly cast y to number
+                            : chart.data
+                        }]
                   }}
                 />
               </div>
