@@ -11,11 +11,9 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { Plus, XCircle, Loader2, ChevronLeft } from 'lucide-react'; // Added ChevronLeft
+import { Plus, XCircle, Loader2, ChevronLeft } from 'lucide-react';
 
 import { useToast } from '@/components/ui/use-toast';
-// Removed DialogDescription import as it's no longer used
-// import { DialogDescription } from '@/components/ui/dialog'; 
 
 // Re-defining interfaces based on your provided backend structure
 interface InvoiceLineItem {
@@ -417,7 +415,7 @@ export function InvoiceForm({ invoice, onClose, onSubmitSuccess }: InvoiceFormPr
 
     // Corrected logic for customer_id vs customer_name
     if (payload.customer_id) {
-      // If customer_id is selected, ensure customer_name is NOT sent
+      // If customer_id is selected, ensure customer_name_manual is NOT sent
       delete payload.customer_name_manual;
       // The backend will use payload.customer_id
     } else {
@@ -474,15 +472,14 @@ export function InvoiceForm({ invoice, onClose, onSubmitSuccess }: InvoiceFormPr
 
   return (
     <form onSubmit={handleSubmit} className='space-y-6'>
-      {/* Removed DialogDescription as it's no longer within a Dialog */}
       <Card>
-        <CardHeader className="flex items-center justify-between"> {/* Added flex for alignment */}
+        <CardHeader className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Button
               type="button"
               variant="ghost"
               size="icon"
-              onClick={onClose} // Use onClose to go back
+              onClick={onClose}
               className="rounded-full"
             >
               <ChevronLeft className="h-6 w-6" />
