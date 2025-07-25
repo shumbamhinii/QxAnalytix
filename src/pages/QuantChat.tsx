@@ -1,23 +1,14 @@
-import { useState } from 'react'
-import { Header } from '@/components/layout/Header'
-import { ChatInterface } from '@/components/chat/ChatInterface'
-import { motion } from 'framer-motion'
+import React from 'react';
+import { ChatInterface } from '@/components/chat/ChatInterface'; // Corrected import path
 
 const QuantChat = () => {
   return (
-    <div className='flex-1 flex flex-col space-y-4 p-4 md:p-6 lg:p-8'>
-      <Header title='Qx Chat' />
-
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.5 }}
-        className='flex-1'
-      >
-        <ChatInterface />
-      </motion.div>
+    <div className="p-4">
+      <h1 className="text-2xl font-bold mb-4">QuantChat AI Assistant</h1>
+      <p className="text-gray-600 mb-6">Your intelligent assistant for financial queries and insights.</p>
+      <ChatInterface />
     </div>
-  )
-}
+  );
+};
 
-export default QuantChat
+export default QuantChat;
