@@ -19,15 +19,14 @@ const ANNUAL_TAX_REBATES = {
 
 export const calculatePAYE = (annualSalary: number): number => {
   let tax = 0;
-  let previousMax = 0;
+  // Removed 'previousMax' as it was declared but never used.
 
   for (const bracket of TAX_BRACKETS) {
     if (annualSalary > bracket.min) {
-      const taxableInBracket = Math.min(annualSalary - bracket.min, bracket.max - bracket.min);
+      const taxableInBracket = Math.min(annualSalary - bracket.min, (bracket.max === Infinity ? annualSalary : bracket.max) - bracket.min);
       tax += taxableInBracket * bracket.rate;
     }
     if (annualSalary <= bracket.max) break;
-    previousMax = bracket.max;
   }
 
   // Apply primary rebate
