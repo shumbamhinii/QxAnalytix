@@ -20,7 +20,7 @@ import {
   DialogDescription,
 } from '@/components/ui/dialog';
 import {
-  AlertDialog, // Import AlertDialog components
+  AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
   AlertDialogContent,
@@ -302,7 +302,7 @@ export function PurchaseList() {
             <Input
               placeholder='Search purchase orders by number or supplier...'
               value={searchTerm}
-              onChange={e => setSearchTerm(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchTerm(e.target.value)}
               className='pl-10'
             />
           </div>
@@ -347,7 +347,7 @@ export function PurchaseList() {
                       </TableCell>
                       <TableCell>
                         R
-                        {(purchase.total_amount).toLocaleString('en-ZA', { // total_amount is now guaranteed number
+                        {(purchase.total_amount).toLocaleString('en-ZA', {
                           minimumFractionDigits: 2,
                         })}
                       </TableCell>
