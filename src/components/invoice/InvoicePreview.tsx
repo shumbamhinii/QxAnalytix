@@ -1,49 +1,49 @@
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Separator } from '@/components/ui/separator'
-import { Download, Mail, Printer } from 'lucide-react'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Separator } from '@/components/ui/separator';
+import { Download, Mail, Printer } from 'lucide-react';
 
 interface InvoiceData {
-  type: 'invoice' | 'quotation'
-  number: string
-  date: string
-  dueDate?: string
-  validUntil?: string
+  type: 'invoice' | 'quotation';
+  number: string;
+  date: string;
+  dueDate?: string;
+  validUntil?: string;
   customer: {
-    name: string
-    address: string
-    email: string
-    vatNumber?: string
-  }
+    name: string;
+    address: string;
+    email: string;
+    vatNumber?: string;
+  };
   company: {
-    name: string
-    address: string
-    email: string
-    phone: string
-    vatNumber: string
-    regNumber: string
-  }
+    name: string;
+    address: string;
+    email: string;
+    phone: string;
+    vatNumber: string;
+    regNumber: string;
+  };
   items: Array<{
-    description: string
-    quantity: number
-    unitPrice: number
-    vatRate: number
-    amount: number
-  }>
-  subtotal: number
-  vatAmount: number
-  total: number
-  notes?: string
+    description: string;
+    quantity: number;
+    unitPrice: number;
+    vatRate: number;
+    amount: number;
+  }>;
+  subtotal: number;
+  vatAmount: number;
+  total: number;
+  notes?: string;
 }
 
 interface InvoicePreviewProps {
-  data: InvoiceData
-  onDownload: () => void
-  onEmail: () => void
-  onPrint: () => void
+  data: InvoiceData;
+  onDownload: () => void;
+  onEmail: () => void;
+  onPrint: () => void;
 }
 
-export function InvoicePreview ({
+export function InvoicePreview({
   data,
   onDownload,
   onEmail,
@@ -208,5 +208,5 @@ export function InvoicePreview ({
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }
